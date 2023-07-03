@@ -15,7 +15,8 @@ import nltk
 import sys
 import asyncio
 from fastpunct import FastPunct
-
+import glob
+import shutil
 
 ascii_map = [
     [0x00AB, '"'],
@@ -225,6 +226,8 @@ if __name__ == '__main__':
     transcribe_p.add_argument('-u', '--convert-unicode', action='store_true')
     transcribe_p.add_argument('-f', '--fastpunct', action='store_true')
     transcribe_p.add_argument('-d', '--device', choices=['cpu', 'cuda'])
+    transcribe_p.add_argument('-ct', '--cpu-threads', type=int, help='# cpu threads')
+    transcribe_p.add_argument('-gt', '--gpu-threads', type=int, help='# gpu threads')
 
     args = parser.parse_args()
 
@@ -255,9 +258,10 @@ if __name__ == '__main__':
             device = args.device
         else:
             device = 'auto'
+
         translator = ctranslate2.Translator('models/'+args.model_path, device=device or 'auto',
-                                            inter_threads=16, intra_threads=16, max_queued_batches=4)
-        tokenizer = transformers.AutoTokenizer.from_pretrained('../full-models/'+args.model_path)
+                                            inter_threads=args.cpu_threads or 16, intra_threads=args.gpu_threads or 16, max_queued_batches=4)
+        tokenizer = transformers.AutoTokenizer.from_pretrained('models/'+args.model_path)
 
         prompt = "Rewrite with proper spelling, grammar, and punctuation: "
 
@@ -461,6 +465,10 @@ if __name__ == '__main__':
     elif args.mode == 'convert':
         converter = ctranslate2.converters.TransformersConverter(args.model_path)
         converter.convert(args.output, quantization=args.q or 'auto', force=True)
+        for file in glob.glob(args.model_path + "*.json"):
+            shutil.copy(file, args.output)
+        for file in glob.glob(args.model_path + "*.model"):
+            shutil.copy(file, args.output)
     else:
         parser.error('specify -c or -t')
         parser.print_help()
