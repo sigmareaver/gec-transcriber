@@ -6,7 +6,7 @@ gec-transcriber is a convenience tool to assist in improving the quality of data
 - `-u`: Convert unicode punctuation to ASCII nearest equivalent
 - `-U`: Convert unicode using unidecode (not implemented yet)
 - `-S`: Strip unicode characters (runs after `-u` and `-U` to strip unicode characters that couldn't be converted to ASCII equivalents)
-- `-f`: Use fastpunct to help restore any missing punctuation.
+- `-f`: Use fastpunct to help restore any missing punctuation and correct spelling. Works reasonably well with low quality data, poor English, etc.
 - `-p`: Specify custom prompt for GEC model
 - Run a GEC model over the dataset (prompt dependent)
 
