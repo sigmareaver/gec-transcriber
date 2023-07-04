@@ -26,3 +26,19 @@ Process my_dataset using GPU, where data is in column 5, and using all available
 python main.py coedit-large transcribe ../datasets/my_dataset -c 5 -d cuda -suUSf -b 32
 ```
 Processed datasets are outputed to `/path/to/your/dataset/output`
+
+### Installation
+Clone repo and enter directory:
+```
+git clone https://github.com/sigmareaver/gec-transcriber.git
+cd gec-transcriber
+```
+Create and activate an environment (e.g. with conda):
+```
+conda create -n gec
+conda activate gec
+```
+Install requirements:
+```
+pip install -r requirements.txt
+```
