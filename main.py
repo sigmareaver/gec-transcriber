@@ -190,10 +190,7 @@ if __name__ == '__main__':
 
         nltk.download('punkt')
 
-        if hasattr(args, 'device'):
-            device = args.device
-        else:
-            device = 'auto'
+        device = args.device or 'auto'
 
         if args.prompt:
             prompt = args.prompt + ": "
@@ -343,7 +340,7 @@ if __name__ == '__main__':
                     # data = list(reader)
                     infile.seek(0)
                     print(f"Loading model {args.model_path}...")
-                    translator = ctranslate2.Translator('models/' + args.model_path, device=device or 'auto',
+                    translator = ctranslate2.Translator('models/' + args.model_path, device=device,
                                                         inter_threads=args.cpu_threads or 16,
                                                         intra_threads=args.gpu_threads or 16, max_queued_batches=4)
                     print(f"Loading tokenizer...")
@@ -390,7 +387,7 @@ if __name__ == '__main__':
                                         async_results.extend(translator.translate_batch(input_tokens,
                                                              max_batch_size=args.batch_size,
                                                              batch_type='examples', asynchronous=True,
-                                                             max_input_length=512))
+                                                             max_input_length=tokenizer.model_max_length))
                                         for a in range(len(async_results)):
                                             id = ids[a]
                                             # joined_results.append("")
