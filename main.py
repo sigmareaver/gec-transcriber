@@ -297,9 +297,11 @@ if __name__ == '__main__':
                     data = list(reader)
                     num_cols = len(data[0])
 
-                    for j in tqdm(range(0, len(data), args.batch_size)):
+                    data_length = len(data)
+                    for j in tqdm(range(0, data_length, args.batch_size)):
+                        batch_size = min([args.batch_size, data_length - j])
                         if ext == '.txt':
-                            for k in range(args.batch_size):
+                            for k in range(batch_size):
                                 row = data[j + k]
                                 if len(row) > num_cols:
                                     for x in range(len(row) - 1, 1, -1):
@@ -341,7 +343,7 @@ if __name__ == '__main__':
 
                         if args.strip_html:
                             y = 5
-                            for x in range(args.batch_size):
+                            for x in range(batch_size):
                                 # for y in range(len(data[j + x])):
                                 soup = BeautifulSoup(data[j + x][y], 'html.parser')
                                 for br in soup.find_all('br'):
@@ -350,7 +352,7 @@ if __name__ == '__main__':
                                 data[j + x][y] = plain_text
 
                         if args.convert_unicode:
-                            for x in range(args.batch_size):
+                            for x in range(batch_size):
                                 for y in range(len(data[j + x])):
                                     data[j + x][y] = convert_unicode(data[j + x][y])
 
@@ -358,7 +360,7 @@ if __name__ == '__main__':
                         sentences = []
                         max_len = []
 
-                        for x in range(args.batch_size):
+                        for x in range(batch_size):
                             sentences.append([])
                             for y in range(len(data[j + x])):
                                 sentences[x].append([])
@@ -379,7 +381,7 @@ if __name__ == '__main__':
                                 for z in range(max_len[y]):
                                     ids = []
                                     input_tokens = []
-                                    for x in range(args.batch_size):
+                                    for x in range(batch_size):
                                         # print(f"{x} {y} {z}")
                                         joined_results.append("")
                                         try:
@@ -430,7 +432,7 @@ if __name__ == '__main__':
                                     data[j + x][y] = joined_results[x]
                                 del joined_results
 
-                        for x in range(args.batch_size):
+                        for x in range(batch_size):
                             writer.writerow(data[j + x])
 
                         # end of for row in reader
