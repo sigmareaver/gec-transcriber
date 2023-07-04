@@ -3,6 +3,7 @@ gec-transcriber is a convenience tool to assist in improving the quality of data
 
 Capabilities:
 - Convert txt data (in the form of `Name: Message`) to csv
+- `-c`: Specify column # to process (or `last` to specify last column, useful for groups of datasets with varying quantities of columns), otherwise process all columns
 - `-s`: Strip HTML tags
 - `-u`: Convert unicode punctuation to ASCII nearest equivalent
 - `-U`: Convert unicode using unidecode (not implemented yet)

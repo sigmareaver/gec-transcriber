@@ -119,15 +119,6 @@ ascii_map = {
 
 def convert_unicode(text: str):
     return text.translate(ascii_map)
-    # out = ''
-    # for char in text:
-    #     for i in range(len(ascii_map)):
-    #         if char == ascii_map[i][0]:
-    #             char = ascii_map[i][1]
-    #             break
-    #     if ord(char) < 128:
-    #         out = out + char
-    # return tmp
 
 def strip_unicode(text: str):
     return text.encode('ascii', 'ignore').decode()
@@ -149,7 +140,7 @@ if __name__ == '__main__':
 
     transcribe_p = subparsers.add_parser('transcribe', help='process dataset')
     transcribe_p.add_argument('dataset', type=str, help='dataset directory or filename')
-    transcribe_p.add_argument('-c', '--data-col', type=int)
+    transcribe_p.add_argument('-c', '--data-col', type=str)
     transcribe_p.add_argument('-b', '--batch-size', type=int)
     transcribe_p.add_argument('-s', '--strip-html', action='store_true')
     transcribe_p.add_argument('-u', '--convert-punct', action='store_true',
@@ -226,9 +217,18 @@ if __name__ == '__main__':
                     data = list(reader)
                     data_length = len(data)
                     num_cols = len(data[0])
+                    data_col = -1
 
-                    if args.data_col and args.data_col >= num_cols:
-                        raise IndexError("Specified data_col > num_cols in CSV")
+                    if args.data_col:
+                        if args.data_col == 'last':
+                            data_col = num_cols - 1
+                        elif args.data_col.isdigit():
+                            data_col = max(int(args.data_col, -1))
+                        else:
+                            raise Exception("-data-col invalid argument")
+
+                    if data_col >= num_cols:
+                        raise Exception("Specified data_col > num_cols in CSV")
 
                     if ext == '.txt':
                         print("Converting txt to csv...")
@@ -282,7 +282,7 @@ if __name__ == '__main__':
                             batch_size = min([args.batch_size, data_length - j])
                             for x in range(batch_size):
                                 for y in range(len(data[j + x])):
-                                    if not args.data_col or (args.data_col and args.data_col == y):
+                                    if data_col > -1 and data_col == y:
                                         soup = BeautifulSoup(data[j + x][y], 'html.parser')
                                         for br in soup.find_all('br'):
                                             br.replace_with(' ')
@@ -298,7 +298,7 @@ if __name__ == '__main__':
                             batch_size = min([args.batch_size, data_length - j])
                             for x in range(batch_size):
                                 for y in range(len(data[j + x])):
-                                    if not args.data_col or (args.data_col and args.data_col == y):
+                                    if data_col > -1 and data_col == y:
                                         data[j + x][y] = convert_unicode(data[j + x][y])
 
                     if args.strip_unicode:
@@ -309,7 +309,7 @@ if __name__ == '__main__':
                             batch_size = min([args.batch_size, data_length - j])
                             for x in range(batch_size):
                                 for y in range(len(data[j + x])):
-                                    if not args.data_col or (args.data_col and args.data_col == y):
+                                    if data_col > -1 and data_col == y:
                                         data[j + x][y] = strip_unicode(data[j + x][y])
 
                     if args.fastpunct:
@@ -325,7 +325,7 @@ if __name__ == '__main__':
                                 sentences.append([])
                                 for y in range(len(data[j + x])):
                                     sentences[x].append([])
-                                    if not args.data_col or (args.data_col and args.data_col == y):
+                                    if data_col > -1 and data_col == y:
                                         sentences[x][y] = nltk.tokenize.sent_tokenize(str(data[j + x][y]))
                                         sentences[x][y] = fastpunct.punct(sentences[x][y], correct=True)
                                         joined_result = ""
@@ -356,16 +356,16 @@ if __name__ == '__main__':
                             sentences.append([])
                             for y in range(len(data[j + x])):
                                 sentences[x].append([])
-                                if not args.data_col or (args.data_col and args.data_col == y):
+                                if data_col > -1 and data_col == y:
                                     sentences[x][y] = nltk.tokenize.sent_tokenize(str(data[j + x][y]))
 
                         for y in range(len(data[j])):
                             max_len.append(0)
-                            if not args.data_col or (args.data_col and args.data_col == y):
+                            if data_col > -1 and data_col == y:
                                 max_len[y] = max([len(sentences[x][y]) for x in range(args.batch_size)])
 
                         for y in range(len(data[j])):
-                            if not args.data_col or (args.data_col and args.data_col == y):
+                            if data_col > -1 and data_col == y:
                                 joined_results = []
                                 for z in range(max_len[y]):
                                     ids = []
@@ -428,25 +428,6 @@ if __name__ == '__main__':
                             str(nonascii) + "   BAD: " + str(bad) + "   Poor Quality: " + str(poor) + '\n')
             anomalies.close()
             print("Done!")
-        # if hasattr(args, 'device'):
-        #     device = args.device
-        # else:
-        #     device = 'auto'
-        # translator = ctranslate2.Translator('models/'+args.model_path, device=device or 'auto')
-        # tokenizer = transformers.AutoTokenizer.from_pretrained('../full-models/'+args.model_path)
-        #
-        # prompt = "Rewrite this food sentence to sound proper: "
-        # input_text = "I got a grate idea for a new desert."
-        # print('Input: ' + prompt + input_text + '\n')
-        #
-        # input_tokens = tokenizer.convert_ids_to_tokens(tokenizer.encode(prompt + input_text))
-        # results = translator.translate_batch([input_tokens])
-        #
-        # for r in results:
-        #     for h in r.hypotheses:
-        #         output_tokens = h #results[0].hypotheses[0]
-        #         output = tokenizer.decode(tokenizer.convert_tokens_to_ids(output_tokens))
-        #         print('Output: ' + output + '\n')
     elif args.mode == 'convert':
         converter = ctranslate2.converters.TransformersConverter(args.model_path)
         converter.convert(args.output, quantization=args.q or 'auto', force=True)
