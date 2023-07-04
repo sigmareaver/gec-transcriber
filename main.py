@@ -129,6 +129,8 @@ def convert_unicode(text: str):
     #         out = out + char
     # return tmp
 
+def strip_unicode(text: str):
+    return text.encode('ascii', 'ignore').decode()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -150,8 +152,14 @@ if __name__ == '__main__':
     transcribe_p.add_argument('-c', '--data-col', type=int)
     transcribe_p.add_argument('-b', '--batch-size', type=int)
     transcribe_p.add_argument('-s', '--strip-html', action='store_true')
-    transcribe_p.add_argument('-u', '--convert-unicode', action='store_true')
-    transcribe_p.add_argument('-f', '--fastpunct', action='store_true')
+    transcribe_p.add_argument('-u', '--convert-punct', action='store_true',
+                              help="convert unicode punctuation to ASCII representations")
+    transcribe_p.add_argument('-U', '--unidecode', action='store_true',
+                              help="run unidecode (not implemented yet)")
+    transcribe_p.add_argument('-S', '--strip-unicode', action='store_true',
+                              help="drop remaining unicode characters that couldn't be converted" )
+    transcribe_p.add_argument('-f', '--fastpunct', action='store_true',
+                              help="run fastpunct model to fix missing punctuation")
     transcribe_p.add_argument('-d', '--device', choices=['cpu', 'cuda'])
     transcribe_p.add_argument('-ct', '--cpu-threads', type=int, help='# cpu threads')
     transcribe_p.add_argument('-gt', '--gpu-threads', type=int, help='# gpu threads')
@@ -222,6 +230,9 @@ if __name__ == '__main__':
                     data_length = len(data)
                     num_cols = len(data[0])
 
+                    if args.data_col and args.data_col >= num_cols:
+                        raise IndexError("Specified data_col > num_cols in CSV")
+
                     if ext == '.txt':
                         print("Converting txt to csv...")
                         for j in tqdm(range(0, data_length, args.batch_size)):
@@ -282,7 +293,7 @@ if __name__ == '__main__':
                                         data[j + x][y] = plain_text
                         del soup
 
-                    if args.convert_unicode:
+                    if args.convert_punct:
                         print("Converting unicode punctuation...")
                         # data = list(reader)
                         infile.seek(0)
@@ -292,6 +303,17 @@ if __name__ == '__main__':
                                 for y in range(len(data[j + x])):
                                     if not args.data_col or (args.data_col and args.data_col == y):
                                         data[j + x][y] = convert_unicode(data[j + x][y])
+
+                    if args.strip_unicode:
+                        print("Stripping unicode...")
+                        # data = list(reader)
+                        infile.seek(0)
+                        for j in tqdm(range(0, data_length, args.batch_size)):
+                            batch_size = min([args.batch_size, data_length - j])
+                            for x in range(batch_size):
+                                for y in range(len(data[j + x])):
+                                    if not args.data_col or (args.data_col and args.data_col == y):
+                                        data[j + x][y] = strip_unicode(data[j + x][y])
 
                     if args.fastpunct:
                         print("Running fastpunct...")
@@ -305,14 +327,14 @@ if __name__ == '__main__':
                             for x in range(batch_size):
                                 sentences.append([])
                                 for y in range(len(data[j + x])):
+                                    sentences[x].append([])
                                     if not args.data_col or (args.data_col and args.data_col == y):
-                                        sentences[x].append([])
                                         sentences[x][y] = nltk.tokenize.sent_tokenize(str(data[j + x][y]))
                                         sentences[x][y] = fastpunct.punct(sentences[x][y], correct=True)
                                         joined_result = ""
                                         for sentence in sentences[x][y]:
                                             if not joined_result:
-                                                joined_result = sentences
+                                                joined_result = sentence
                                             else:
                                                 joined_result = joined_result + ' ' + sentence
                                         data[j + x][y] = joined_result
@@ -336,13 +358,13 @@ if __name__ == '__main__':
                         for x in range(batch_size):
                             sentences.append([])
                             for y in range(len(data[j + x])):
+                                sentences[x].append([])
                                 if not args.data_col or (args.data_col and args.data_col == y):
-                                    sentences[x].append([])
                                     sentences[x][y] = nltk.tokenize.sent_tokenize(str(data[j + x][y]))
 
                         for y in range(len(data[j])):
+                            max_len.append(0)
                             if not args.data_col or (args.data_col and args.data_col == y):
-                                max_len.append(0)
                                 max_len[y] = max([len(sentences[x][y]) for x in range(args.batch_size)])
 
                         for y in range(len(data[j])):
