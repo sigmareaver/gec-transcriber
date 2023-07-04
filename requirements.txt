@@ -3,4 +3,4 @@ transformers
 fastpunct
 tqdm
 nltk
-bs4
+beautifulsoup4
