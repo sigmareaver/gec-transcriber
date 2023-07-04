@@ -228,6 +228,7 @@ if __name__ == '__main__':
     transcribe_p.add_argument('-d', '--device', choices=['cpu', 'cuda'])
     transcribe_p.add_argument('-ct', '--cpu-threads', type=int, help='# cpu threads')
     transcribe_p.add_argument('-gt', '--gpu-threads', type=int, help='# gpu threads')
+    transcribe_p.add_argument('-p', '--prompt', type=str, help='custom prompt for the GEC model')
 
     args = parser.parse_args()
 
@@ -263,7 +264,10 @@ if __name__ == '__main__':
                                             inter_threads=args.cpu_threads or 16, intra_threads=args.gpu_threads or 16, max_queued_batches=4)
         tokenizer = transformers.AutoTokenizer.from_pretrained('models/'+args.model_path)
 
-        prompt = "Rewrite with proper spelling, grammar, and punctuation: "
+        if hasattr(args, 'prompt'):
+            prompt = args.prompt + ": "
+        else:
+            prompt = "Rewrite with proper spelling, grammar, and punctuation: "
 
         csv.field_size_limit(sys.maxsize)
 
