@@ -1,6 +1,7 @@
 # gec-transcriber
 gec-transcriber is a convenience tool to assist in improving the quality of datasets, especially those that are created through automated means such as scraping.
 
+Capabilities:
 - Convert txt data (in the form of `Name: Message`) to csv
 - `-s`: Strip HTML tags
 - `-u`: Convert unicode punctuation to ASCII nearest equivalent
@@ -9,6 +10,11 @@ gec-transcriber is a convenience tool to assist in improving the quality of data
 - `-f`: Use fastpunct to help restore any missing punctuation and correct spelling. Works reasonably well with low quality data, poor English, etc.
 - `-p`: Specify custom prompt for GEC model
 - Run a GEC model over the dataset (prompt dependent)
+
+Parallelism:
+- `-ct`: # CPU threads (default 16)
+- `-gt`: # GPU threads (default 16)
+- `-b`: Batch size (default 1)
 
 Convert model to CTranslate2:<br>
 ```
