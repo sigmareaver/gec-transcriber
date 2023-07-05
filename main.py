@@ -163,7 +163,7 @@ if __name__ == '__main__':
             args.batch_size = 1
         if isdir(args.dataset):
             inPath = args.dataset
-            outPath = join(args.transcribe, 'output/')
+            outPath = join(args.dataset, 'output/')
             datasets = [[], []]
             datasets[0] = [f for f in listdir(inPath) if isfile(join(inPath, f))]
             datasets[1] = [splitext(f)[0]+'.csv' for f in datasets[0]]
@@ -419,6 +419,9 @@ if __name__ == '__main__':
                             writer.writerow(data[j + x])
 
                         # end of for row in reader
+
+                    del translator
+                    del tokenizer
 
                     infile.close()
                     outfile.close()
