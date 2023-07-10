@@ -303,6 +303,9 @@ if __name__ == '__main__':
                                     if data_col > -1 and data_col == y:
                                         data[j + x][y] = convert_unicode(data[j + x][y])
 
+                    if args.unidecode:
+                        print("Running unidecode... (not implemented)")
+
                     if args.strip_unicode:
                         print("Stripping unicode...")
                         # data = list(reader)
@@ -358,16 +361,26 @@ if __name__ == '__main__':
                             sentences.append([])
                             for y in range(len(data[j + x])):
                                 sentences[x].append([])
-                                if data_col > -1 and data_col == y:
+                                if data_col == -1 or (data_col > -1 and data_col == y):
                                     sentences[x][y] = nltk.tokenize.sent_tokenize(str(data[j + x][y]))
 
-                        for y in range(len(data[j])):
-                            max_len.append(0)
-                            if data_col > -1 and data_col == y:
-                                max_len[y] = max([len(sentences[x][y]) for x in range(batch_size)])
+                        # for y in range(len(data[j])):
+                        #     max_len.append(0)
+                        #     if data_col == -1 or (data_col > -1 and data_col == y):
+                        #         max_len[y] = max([len(sentences[x][y]) for x in range(batch_size)])
+                        for x in range(batch_size):
+                            for y in range(len(data[j+x])):
+                                if len(max_len) <= y:
+                                    max_len.append(0)
+                                if data_col == -1 or (data_col > -1 and data_col == y):
+                                    try:
+                                        max_len[y] = max(max_len[y], len(sentences[x][y]))
+                                    except:
+                                        print("caught")
 
-                        for y in range(len(data[j])):
-                            if data_col > -1 and data_col == y:
+                        # for y in range(len(data[j])):
+                        for y in range(len(max_len)):
+                            if data_col == -1 or (data_col > -1 and data_col == y):
                                 joined_results = []
                                 for z in range(max_len[y]):
                                     ids = []
@@ -375,7 +388,7 @@ if __name__ == '__main__':
                                     for x in range(batch_size):
                                         # print(f"{x} {y} {z}")
                                         joined_results.append("")
-                                        if len(sentences[x][y]) > z:
+                                        if len(sentences[x]) > y and len(sentences[x][y]) > z:
                                             ids.append(x)
                                             # input_tokens.append([])
                                             # s = sentences[x][y][z]
