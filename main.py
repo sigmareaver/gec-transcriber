@@ -198,7 +198,7 @@ if __name__ == '__main__':
             ok = 0
             poor = 0
 
-            for i in range(len(datasets)):
+            for i in range(len(datasets[0])):
                 with open(join(inPath, datasets[0][i]), 'r', newline='') as infile, \
                           open(join(outPath, datasets[1][i]), 'w', newline='') as outfile:
                     ext = splitext(datasets[0][i])[1]
@@ -251,33 +251,30 @@ if __name__ == '__main__':
                                     continue
                                 row_len = len(row)
                                 for x in range(row_len):
-                                    try:
-                                        if len(row[x]) > 2048: # TODO: Unhardcode max length
-                                            anomalies.write(f"TOO LONG: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
-                                            long += 1
-                                            # continue
-                                        elif not row[x].isascii():
-                                            anomalies.write(f"NON-ASCII: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
-                                            nonascii += 1
-                                            # continue
-                                        elif row[x] and not row[x][0].isalnum() and \
-                                                (row[x][0] != '*' and row[x][0] != '>' and
-                                                 row[x][0] != '"'):
-                                            anomalies.write(f"Probably BAD: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
-                                            bad += 1
-                                            # continue
-                                        elif len(row[x]) > 4 and row[x].startswith('*...') and row[x][4].isalnum():
-                                            ok += 1
-                                        elif (len(row[x]) > 1 and row[x][0] == '*' and (
-                                                not row[x][1].isalnum() and not row[x][1] == '(' and
-                                                not row[x][1] == '"' and not row[x][1] == '\'' and
-                                                not row[x][1] == '*')):
-                                            anomalies.write(f"May contain poor quality data: {datasets[1][i]}: \
-                                                              Line {str(j+k)}: {row[x]}\n")
-                                            poor += 1
-                                            # continue
-                                    except:
-                                        print("caught")
+                                    if len(row[x]) > 2048: # TODO: Unhardcode max length
+                                        anomalies.write(f"TOO LONG: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                        long += 1
+                                        # continue
+                                    elif not row[x].isascii():
+                                        anomalies.write(f"NON-ASCII: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                        nonascii += 1
+                                        # continue
+                                    elif row[x] and not row[x][0].isalnum() and \
+                                            (row[x][0] != '*' and row[x][0] != '>' and
+                                             row[x][0] != '"'):
+                                        anomalies.write(f"Probably BAD: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                        bad += 1
+                                        # continue
+                                    elif len(row[x]) > 4 and row[x].startswith('*...') and row[x][4].isalnum():
+                                        ok += 1
+                                    elif (len(row[x]) > 1 and row[x][0] == '*' and (
+                                            not row[x][1].isalnum() and not row[x][1] == '(' and
+                                            not row[x][1] == '"' and not row[x][1] == '\'' and
+                                            not row[x][1] == '*')):
+                                        anomalies.write(f"May contain poor quality data: {datasets[1][i]}: \
+                                                          Line {str(j+k)}: {row[x]}\n")
+                                        poor += 1
+                                        # continue
 
                     if args.strip_html:
                         print("Stripping HTML...")
