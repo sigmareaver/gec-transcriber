@@ -231,48 +231,48 @@ if __name__ == '__main__':
                         raise Exception("Specified data_col > num_cols in CSV")
 
                     if ext == '.txt':
+                        # The usefulness of txt to csv conversion is heavily dependent on the dataset.
+                        # Customization is to suite your needs is recommended.
                         print("Converting txt to csv...")
                         for j in tqdm(range(0, data_length, args.batch_size)):
                             batch_size = min([args.batch_size, data_length - j])
                             for k in range(batch_size):
                                 row = data[j + k]
-                                if len(row) > num_cols:
+                                row_len = len(row)
+                                if row_len > num_cols:
                                     for x in range(len(row) - 1, 1, -1):
                                         if x == 1:
                                             break
                                         row[x - 1] = row[x - 1] + ": " + row[x]
                                         row.pop(x)
-                                if len(row) == 0:
+                                if row_len == 0:
                                     anomalies.write("EMPTY ROW: " + datasets[0][i] + ": " + str(j+k) + '\n')
                                     empty += 1
                                     continue
-                                if len(row) == 1:
-                                    if len(row[0]) > 0:
-                                        if len(row[0]) > 2048:
-                                            anomalies.write("TOO LONG: " + datasets[1][i] + ": " +
-                                                            str(j+k) + ": " + row[0] + '\n')
-                                            long += 1
-                                            continue
-                                        elif not row[0].isascii() or (len(row) > 1 and not row[1].isascii()):
-                                            anomalies.write("NON-ASCII: " + datasets[1][i] + ": " +
-                                                            str(j+k) + ": " + row[0] + '\n')
-                                            nonascii += 1
-                                            continue
-                                        elif not row[0][0].isalnum() and (row[0][0] != '*' and row[0][0] != '>'):
-                                            anomalies.write("Probably BAD: " + datasets[1][i] + ": " +
-                                                            str(j+k) + ": " + row[0] + '\n')
-                                            bad += 1
-                                            continue
-                                        elif len(row[0]) > 4 and row[0].startswith('*...') and row[0][4].isalnum():
-                                            ok += 1
-                                        elif (len(row[0]) > 1 and row[0][0] == '*' and (
-                                                not row[0][1].isalnum() and not row[0][1] == '(' and
-                                                not row[0][1] == '"' and not row[0][1] == '\'' and
-                                                not row[0][1] == '*')):
-                                            anomalies.write("May contain poor quality data: " + datasets[1][i] + ": " +
-                                                            str(j+k) + ": " + row[0] + '\n')
-                                            poor += 1
-                                            continue
+                                row_len = len(row)
+                                for x in range(row_len):
+                                    if len(row[x]) > 2048: # TODO: Unhardcode max length
+                                        anomalies.write(f"TOO LONG: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                        long += 1
+                                        # continue
+                                    elif not row[x].isascii():
+                                        anomalies.write(f"NON-ASCII: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                        nonascii += 1
+                                        # continue
+                                    elif not row[x][0].isalnum() and (row[x][0] != '*' and row[x][0] != '>'):
+                                        anomalies.write(f"Probably BAD: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                        bad += 1
+                                        # continue
+                                    elif len(row[x]) > 4 and row[x].startswith('*...') and row[x][4].isalnum():
+                                        ok += 1
+                                    elif (len(row[x]) > 1 and row[x][0] == '*' and (
+                                            not row[x][1].isalnum() and not row[x][1] == '(' and
+                                            not row[x][1] == '"' and not row[x][1] == '\'' and
+                                            not row[x][1] == '*')):
+                                        anomalies.write(f"May contain poor quality data: {datasets[1][i]}: \
+                                                          Line {str(j+k)}: {row[x]}\n")
+                                        poor += 1
+                                        # continue
 
                     if args.strip_html:
                         print("Stripping HTML...")
