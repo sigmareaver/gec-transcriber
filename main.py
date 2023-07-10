@@ -251,28 +251,33 @@ if __name__ == '__main__':
                                     continue
                                 row_len = len(row)
                                 for x in range(row_len):
-                                    if len(row[x]) > 2048: # TODO: Unhardcode max length
-                                        anomalies.write(f"TOO LONG: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
-                                        long += 1
-                                        # continue
-                                    elif not row[x].isascii():
-                                        anomalies.write(f"NON-ASCII: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
-                                        nonascii += 1
-                                        # continue
-                                    elif not row[x][0].isalnum() and (row[x][0] != '*' and row[x][0] != '>'):
-                                        anomalies.write(f"Probably BAD: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
-                                        bad += 1
-                                        # continue
-                                    elif len(row[x]) > 4 and row[x].startswith('*...') and row[x][4].isalnum():
-                                        ok += 1
-                                    elif (len(row[x]) > 1 and row[x][0] == '*' and (
-                                            not row[x][1].isalnum() and not row[x][1] == '(' and
-                                            not row[x][1] == '"' and not row[x][1] == '\'' and
-                                            not row[x][1] == '*')):
-                                        anomalies.write(f"May contain poor quality data: {datasets[1][i]}: \
-                                                          Line {str(j+k)}: {row[x]}\n")
-                                        poor += 1
-                                        # continue
+                                    try:
+                                        if len(row[x]) > 2048: # TODO: Unhardcode max length
+                                            anomalies.write(f"TOO LONG: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                            long += 1
+                                            # continue
+                                        elif not row[x].isascii():
+                                            anomalies.write(f"NON-ASCII: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                            nonascii += 1
+                                            # continue
+                                        elif row[x] and not row[x][0].isalnum() and \
+                                                (row[x][0] != '*' and row[x][0] != '>' and
+                                                 row[x][0] != '"'):
+                                            anomalies.write(f"Probably BAD: {datasets[1][i]}: Line {str(j+k)}: {row[x]}\n")
+                                            bad += 1
+                                            # continue
+                                        elif len(row[x]) > 4 and row[x].startswith('*...') and row[x][4].isalnum():
+                                            ok += 1
+                                        elif (len(row[x]) > 1 and row[x][0] == '*' and (
+                                                not row[x][1].isalnum() and not row[x][1] == '(' and
+                                                not row[x][1] == '"' and not row[x][1] == '\'' and
+                                                not row[x][1] == '*')):
+                                            anomalies.write(f"May contain poor quality data: {datasets[1][i]}: \
+                                                              Line {str(j+k)}: {row[x]}\n")
+                                            poor += 1
+                                            # continue
+                                    except:
+                                        print("caught")
 
                     if args.strip_html:
                         print("Stripping HTML...")
