@@ -223,7 +223,7 @@ if __name__ == '__main__':
                         if args.data_col == 'last':
                             data_col = num_cols - 1
                         elif args.data_col.isdigit():
-                            data_col = max(int(args.data_col, -1))
+                            data_col = max(int(args.data_col), -1)
                         else:
                             raise Exception("-data-col invalid argument")
 
@@ -243,24 +243,24 @@ if __name__ == '__main__':
                                         row[x - 1] = row[x - 1] + ": " + row[x]
                                         row.pop(x)
                                 if len(row) == 0:
-                                    anomalies.write("EMPTY ROW: " + datasets[0][i] + ": " + str(reader.line_num) + '\n')
+                                    anomalies.write("EMPTY ROW: " + datasets[0][i] + ": " + str(j+k) + '\n')
                                     empty += 1
                                     continue
                                 if len(row) == 1:
                                     if len(row[0]) > 0:
                                         if len(row[0]) > 2048:
                                             anomalies.write("TOO LONG: " + datasets[1][i] + ": " +
-                                                            str(reader.line_num) + ": " + row[0] + '\n')
+                                                            str(j+k) + ": " + row[0] + '\n')
                                             long += 1
                                             continue
                                         elif not row[0].isascii() or (len(row) > 1 and not row[1].isascii()):
                                             anomalies.write("NON-ASCII: " + datasets[1][i] + ": " +
-                                                            str(reader.line_num) + ": " + row[0] + '\n')
+                                                            str(j+k) + ": " + row[0] + '\n')
                                             nonascii += 1
                                             continue
                                         elif not row[0][0].isalnum() and (row[0][0] != '*' and row[0][0] != '>'):
                                             anomalies.write("Probably BAD: " + datasets[1][i] + ": " +
-                                                            str(reader.line_num) + ": " + row[0] + '\n')
+                                                            str(j+k) + ": " + row[0] + '\n')
                                             bad += 1
                                             continue
                                         elif len(row[0]) > 4 and row[0].startswith('*...') and row[0][4].isalnum():
@@ -270,7 +270,7 @@ if __name__ == '__main__':
                                                 not row[0][1] == '"' and not row[0][1] == '\'' and
                                                 not row[0][1] == '*')):
                                             anomalies.write("May contain poor quality data: " + datasets[1][i] + ": " +
-                                                            str(reader.line_num) + ": " + row[0] + '\n')
+                                                            str(j+k) + ": " + row[0] + '\n')
                                             poor += 1
                                             continue
 
@@ -362,7 +362,7 @@ if __name__ == '__main__':
                         for y in range(len(data[j])):
                             max_len.append(0)
                             if data_col > -1 and data_col == y:
-                                max_len[y] = max([len(sentences[x][y]) for x in range(args.batch_size)])
+                                max_len[y] = max([len(sentences[x][y]) for x in range(batch_size)])
 
                         for y in range(len(data[j])):
                             if data_col > -1 and data_col == y:
