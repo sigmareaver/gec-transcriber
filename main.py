@@ -284,13 +284,14 @@ if __name__ == '__main__':
                             batch_size = min([args.batch_size, data_length - j])
                             for x in range(batch_size):
                                 for y in range(len(data[j + x])):
-                                    if data_col > -1 and data_col == y:
+                                    if data_col == -1 or (data_col > -1 and data_col == y):
                                         soup = BeautifulSoup(data[j + x][y], 'html.parser')
                                         for br in soup.find_all('br'):
                                             br.replace_with(' ')
                                         plain_text = soup.get_text()
                                         data[j + x][y] = plain_text
-                        del soup
+                        if 'soup' in globals():
+                            del soup
 
                     if args.convert_punct:
                         print("Converting unicode punctuation...")
@@ -373,10 +374,7 @@ if __name__ == '__main__':
                                 if len(max_len) <= y:
                                     max_len.append(0)
                                 if data_col == -1 or (data_col > -1 and data_col == y):
-                                    try:
-                                        max_len[y] = max(max_len[y], len(sentences[x][y]))
-                                    except:
-                                        print("caught")
+                                    max_len[y] = max(max_len[y], len(sentences[x][y]))
 
                         # for y in range(len(data[j])):
                         for y in range(len(max_len)):
